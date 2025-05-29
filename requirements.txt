@@ -1,2 +1,5 @@
 streamlit
 requests
+scikit-learn
+Janome
+joblib # joblibはscikit-learnの依存関係に含まれることが多いですが、明示的に記述しても問題ありません

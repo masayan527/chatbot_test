@@ -1,18 +1,15 @@
 # chatbot_app.py
 import streamlit as st
-import requests # 新しく追加するライブラリ
+import requests
+import joblib # モデルの読み込み用
+from janome.tokenizer import Tokenizer # 日本語の単語分割用
+from datetime import datetime # 時間・日付用
 
-# OpenWeatherMapのAPIキーをここに設定してください
-# 絶対にGitHubなどの公開リポジトリに直接書き込まないでください！
-# 環境変数やStreamlit Secretsを使うのがベストですが、今回はテスト用に直接書きます。
-# 実際には st.secrets["OPENWEATHER_API_KEY"] のように使います。
-OPENWEATHER_API_KEY = st.secrets["OPENWEATHER_API_KEY"] # 例: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# --- 既存のOpenWeatherMap APIキーと天気関数 ---
+OPENWEATHER_API_KEY = st.secrets["OPENWEATHER_API_KEY"]
 
-# 天気予報を取得する関数
 def get_weather(city_name):
-    # 日本語の都市名に対応させるため、OpenWeatherMapのAPIは都市名と国コードを指定
-    # ただし、都市名だけでの検索は複数の候補が出てくる場合があるので、
-    # より厳密には緯度経度を使う方が良いですが、今回は簡易版として都市名で検索
+    # ... (既存の天気関数と同じ) ...
     base_url = "http://api.openweathermap.org/data/2.5/weather"
     params = {
         "q": city_name + ",JP", # 都市名と国コード（日本）を指定
@@ -22,14 +19,14 @@ def get_weather(city_name):
     }
     try:
         response = requests.get(base_url, params=params)
-        response.raise_for_status() # HTTPエラーが発生した場合に例外を発生させる
+        response.raise_for_status()
         data = response.json()
 
         if data and data.get("main") and data.get("weather"):
             weather_description = data["weather"][0]["description"]
             temperature = data["main"]["temp"]
             feels_like = data["main"]["feels_like"]
-            city_display_name = data["name"] # APIが認識した都市名（日本語化される場合がある）
+            city_display_name = data["name"]
 
             return (
                 f"{city_display_name} の天気は {weather_description} です。\n"
@@ -42,55 +39,86 @@ def get_weather(city_name):
     except Exception as e:
         return f"予期せぬエラーが発生しました: {e}"
 
+# --- NLPモデルの読み込みと前処理関数 ---
+# モデルはアプリ起動時に一度だけ読み込む
+try:
+    nlp_pipeline = joblib.load('intent_recognition_model.joblib')
+    t = Tokenizer() # Janomeトークナイザーも初期化
 
-# あなたのチャットボットのロジックを修正
+    def tokenize_text_for_nlp(text):
+        return ' '.join([token.surface for token in t.tokenize(text)])
+
+except FileNotFoundError:
+    st.error("NLPモデルファイル (intent_recognition_model.joblib) が見つかりません。"
+             "先に train_nlp_model.py を実行してモデルを作成してください。")
+    st.stop() # アプリの実行を停止
+except Exception as e:
+    st.error(f"NLPモデルの読み込み中にエラーが発生しました: {e}")
+    st.stop()
+
+# --- 地域名とAPI用の都市名のマッピング（これはエンティティ抽出の簡易版） ---
+city_mapping = {
+    "東京": "Tokyo",
+    "大阪": "Osaka",
+    "福岡": "Fukuoka",
+    "札幌": "Sapporo",
+    "名古屋": "Nagoya",
+    "仙台": "Sendai",
+    "広島": "Hiroshima",
+    "沖縄": "Okinawa",
+    "延岡": "Nobeoka",
+    "nobeoka": "Nobeoka",
+    "宮崎": "Miyazaki",
+    "tokyo": "Tokyo", # ユーザーがローマ字で入力することも考慮
+    # 必要に応じて他の都市も追加
+}
+
+# --- チャットボットのロジック（NLPを利用） ---
 def simple_chatbot(text):
-    text = text.lower()
+    # テキストを前処理してモデルに渡す
+    tokenized_input = tokenize_text_for_nlp(text.lower()) # モデルは小文字化されたトークン済みテキストで学習
 
-    if "こんにちは" in text or "こんばんは" in text:
+    # 意図を予測
+    predicted_intent = nlp_pipeline.predict([tokenized_input])[0]
+
+    # 予測された意図に基づいて応答を生成
+    if predicted_intent == "greet":
         return "こんにちは！何かお手伝いできることはありますか？"
-    elif "天気" in text:
-        # 地域名を抽出するための簡易的なロジック
-        # 例：「東京の天気」「大阪の天気」「福岡の天気」
-        regions = ["東京", "大阪", "福岡", "札幌", "名古屋", "仙台", "広島", "沖縄", "Nobeoka", "延岡","宮崎"] # よくある地域名を追加
-        
-        found_region = None
-        for region in regions:
-            if region.lower() in text:
-                found_region = region
+    
+    elif predicted_intent == "get_weather":
+        # 天気を聞く意図の場合、テキストから地域名を抽出（簡易版）
+        found_region_key = None
+        for region_key, api_city_name in city_mapping.items():
+            if region_key.lower() in text.lower(): # ユーザーの入力テキストに地域名が含まれているか
+                found_region_key = region_key
                 break
         
-        if found_region:
-            return get_weather(found_region)
+        if found_region_key:
+            return get_weather(city_mapping[found_region_key])
         else:
             return "どこの地域の天気ですか？（例: 東京の天気）"
-            
-    elif "ありがとう" in text:
+
+    elif predicted_intent == "thank":
         return "どういたしまして！"
-    elif "さようなら" in text:
+    
+    elif predicted_intent == "goodbye":
         return "またお話ししましょう！"
-    elif "元気" in text or "調子" in text:
-        return "しんどいので帰りたいです"
-    elif "何ができる" in text or "できること" in text:
+    
+    elif predicted_intent == "ask_capability":
         return "天気予報をお伝えしたり、簡単な会話ができます。他にはどんなことが知りたいですか？"
-    elif "自己紹介" in text:
-        return "私はシンプルなチャットボットです。あなたの質問に答えるためにここにいます！"
-    elif "日付" in text:
-        from datetime import datetime
-        today = datetime.today()
-        # 修正後: strftime() を使う
-        return f"今日の {today.strftime('%Y年%m月%d日')} です。"
-    elif "時間" in text:
-        from datetime import datetime
+    
+    elif predicted_intent == "get_time":
         now = datetime.now()
-        # こちらも同様に修正可能
         return f"現在の時刻は {now.strftime('%H時%M分')} です。"
-    else:
+    
+    elif predicted_intent == "get_date":
+        today = datetime.today()
+        return f"今日の {today.strftime('%Y年%m月%d日')} です。"
+    
+    else: # どの意図にも当てはまらなかった場合
         return "すみません、よくわかりません。別の質問をしてください。"
 
-
 # --- StreamlitでのWebアプリ化 ---
-
 st.title("ファイケムのアシスたん")
 
 if "messages" not in st.session_state:
