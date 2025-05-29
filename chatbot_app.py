@@ -124,7 +124,9 @@ def simple_chatbot(text):
     
     elif predicted_intent == "ask_troubleshoot":
         return "どの設備の故障ですか？"
-      
+    
+    elif predicted_intent == "liq_troubleshoot":
+        return "直ぐにシャワーを浴びて、上司へ報告してください"  
           
     else: # どの意図にも当てはまらなかった場合
         return "すみません、よくわかりません。別の質問をしてください。"
