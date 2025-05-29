@@ -6,7 +6,7 @@ import requests # 新しく追加するライブラリ
 # 絶対にGitHubなどの公開リポジトリに直接書き込まないでください！
 # 環境変数やStreamlit Secretsを使うのがベストですが、今回はテスト用に直接書きます。
 # 実際には st.secrets["OPENWEATHER_API_KEY"] のように使います。
-OPENWEATHER_API_KEY = st.secrets["b710236c03c9339def19a27ffd7ad049"] # 例: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+OPENWEATHER_API_KEY = st.secrets["OPENWEATHER_API_KEY"] # 例: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # 天気予報を取得する関数
 def get_weather(city_name):
