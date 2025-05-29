@@ -3,7 +3,8 @@ import streamlit as st
 import requests
 import joblib # モデルの読み込み用
 from janome.tokenizer import Tokenizer # 日本語の単語分割用
-from datetime import datetime # 時間・日付用
+from datetime import datetime, timedelta # timedelta も使う場合があるため追加（今回は不要かも）
+import pytz # これを追加！
 
 # --- 既存のOpenWeatherMap APIキーと天気関数 ---
 OPENWEATHER_API_KEY = st.secrets["OPENWEATHER_API_KEY"]
@@ -76,7 +77,8 @@ city_mapping = {
 # --- チャットボットのロジック（NLPを利用） ---
 def simple_chatbot(text):
     # テキストを前処理してモデルに渡す
-    tokenized_input = tokenize_text_for_nlp(text.lower()) # モデルは小文字化されたトークン済みテキストで学習
+    tokenized_input = tokenize_text_for_nlp(text.lower())
+    predicted_intent = nlp_pipeline.predict([tokenized_input])[0]
 
     # 意図を予測
     predicted_intent = nlp_pipeline.predict([tokenized_input])[0]
@@ -108,12 +110,17 @@ def simple_chatbot(text):
         return "天気予報をお伝えしたり、簡単な会話ができます。他にはどんなことが知りたいですか？"
     
     elif predicted_intent == "get_time":
-        now = datetime.now()
-        return f"現在の時刻は {now.strftime('%H時%M分')} です。"
+        # 日本時間のタイムゾーンオブジェクトを作成
+        jst = pytz.timezone('Asia/Tokyo')
+        # 現在時刻を日本時間で取得
+        now_jst = datetime.now(jst)
+        return f"現在の時刻は {now_jst.strftime('%H時%M分')} です。"
     
     elif predicted_intent == "get_date":
-        today = datetime.today()
-        return f"今日の {today.strftime('%Y年%m月%d日')} です。"
+        # 日付も日本時間に合わせる場合（必要なら）
+        jst = pytz.timezone('Asia/Tokyo')
+        today_jst = datetime.now(jst) # 日付も現在時刻から取得
+        return f"今日の日付は {today_jst.strftime('%Y年%m月%d日')} です。"
     
     else: # どの意図にも当てはまらなかった場合
         return "すみません、よくわかりません。別の質問をしてください。"
