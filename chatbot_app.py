@@ -112,6 +112,7 @@ def simple_chatbot(text):
     elif predicted_intent == "get_time":
         # 日本時間のタイムゾーンオブジェクトを作成
         jst = pytz.timezone('Asia/Tokyo')
+    
         # 現在時刻を日本時間で取得
         now_jst = datetime.now(jst)
         return f"現在の時刻は {now_jst.strftime('%H時%M分')} です。"
@@ -130,6 +131,9 @@ def simple_chatbot(text):
 
     elif predicted_intent == "ask_facility":
         return "どうしようもないので設備技術部へ連絡じゃ"            
+
+    elif predicted_intent == "ask_tank":
+        return "ガンタンクでなければ直ぐに上司に報告じゃ"
 
     else: # どの意図にも当てはまらなかった場合
         return "すみません、よくわかりません。別の質問をしてください。"
