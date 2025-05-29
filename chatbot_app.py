@@ -122,6 +122,30 @@ def simple_chatbot(text):
         today_jst = datetime.now(jst) # 日付も現在時刻から取得
         return f"今日の日付は {today_jst.strftime('%Y年%m月%d日')} です。"
     
+    elif predicted_intent == "ask_troubleshoot":
+        # 簡易的なエンティティ抽出（どの機械か）
+        machine_type = "機械"
+        if "プリンター" in text:
+            machine_type = "プリンター"
+        elif "pc" in text.lower() or "パソコン" in text:
+            machine_type = "PC"
+        elif "冷蔵庫" in text:
+            machine_type = "冷蔵庫"
+        elif "洗濯機" in text:
+            machine_type = "洗濯機"
+        # ここに他の機械タイプを追加できます
+
+        # より具体的な故障内容のキーワードチェック
+        if "電源" in text and ("入らない" in text or "つかない" in text):
+            return f"{machine_type}の電源が入らないのですね。まずは電源コードがしっかり差し込まれているか、コンセントに問題がないかご確認ください。"
+        elif "エラーコード" in text or "エラーメッセージ" in text:
+            return f"{machine_type}でエラーが出ているのですね。表示されているエラーコードやメッセージを教えていただけますか？それによって解決策が異なります。"
+        elif "異音" in text:
+            return f"{machine_type}から異音がするのですね。どのような音か、いつから発生していますか？\nまずは取扱説明書をご確認いただくか、メーカーのサポートにご連絡ください。"
+        else:
+            return f"{machine_type}の故障についてですね。どのような状況ですか？\nもう少し詳しく教えていただけますか？（例: 「PCの電源が入らない」「プリンターが紙詰まりした」など）"
+
+    
     else: # どの意図にも当てはまらなかった場合
         return "すみません、よくわかりません。別の質問をしてください。"
 
