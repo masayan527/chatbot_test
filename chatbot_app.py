@@ -70,19 +70,21 @@ def simple_chatbot(text):
     elif "さようなら" in text:
         return "またお話ししましょう！"
     elif "元気" in text or "調子" in text:
-        return "私は元気ですよ！何かお手伝いできますか？"
+        return "しんどいので帰りたいです"
     elif "何ができる" in text or "できること" in text:
         return "天気予報をお伝えしたり、簡単な会話ができます。他にはどんなことが知りたいですか？"
     elif "自己紹介" in text:
         return "私はシンプルなチャットボットです。あなたの質問に答えるためにここにいます！"
-    elif "時間" in text:
-        from datetime import datetime
-        now = datetime.now()
-        return f"現在の時刻は {now.hour}時{now.minute}分です。"
     elif "日付" in text:
         from datetime import datetime
         today = datetime.today()
-        return f"今日の {'%Y年%m月%d日' % (today.year, today.month, today.day)} です。"
+        # 修正後: strftime() を使う
+        return f"今日の {today.strftime('%Y年%m月%d日')} です。"
+    elif "時間" in text:
+        from datetime import datetime
+        now = datetime.now()
+        # こちらも同様に修正可能
+        return f"現在の時刻は {now.strftime('%H時%M分')} です。"
     else:
         return "すみません、よくわかりません。別の質問をしてください。"
 
