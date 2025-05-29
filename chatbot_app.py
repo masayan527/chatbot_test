@@ -74,7 +74,7 @@ def simple_chatbot(text):
 
 # --- StreamlitでのWebアプリ化 ---
 
-st.title("簡易チャットボット")
+st.title("ファイケムのアシスたん")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
