@@ -1,0 +1,979 @@
+@âÊñ ì‡Ç…é˚Ç‹ÇÈÇÊÇ§Ç…ägëÂèkè¨
+--track0:è„â∫,-2000,2000,0
+--track1:ç∂âE,-2000,2000,0
+--check0:âÒì]Çñ≥éã,0
+--dialog:ècï˚å¸/chk,local vertical=1;â°ï˚å¸/chk,local horizontal=1;ägëÂ/chk,local zoomUp=0;èkè¨/chk,local zoomDown=1;
+
+if vertical == 0 and horizontal == 0 then return end
+if zoomUp == 0 and zoomDown == 0 then return end
+
+local top = obj.track0
+local bottom = obj.track0
+local left = obj.track1
+local right = obj.track1
+
+local screenLeft   = -obj.screen_w / 2 + left
+local screenRight  =  obj.screen_w / 2 - right
+local screenTop    = -obj.screen_h / 2 + top
+local screenBottom =  obj.screen_h / 2 - bottom
+
+local objR = obj.rz
+if obj.check0 then
+	objR = 0
+end
+local objW = obj.w * math.abs(math.cos(math.pi * objR / 180))  + obj.h * math.abs(math.sin(math.pi * objR / 180)) 
+local objH = obj.h * math.abs(math.cos(math.pi * objR / 180))  + obj.w * math.abs(math.sin(math.pi * objR / 180)) 
+local objZoom = obj.getvalue("zoom") / 100;
+
+local objLeft   = -objW / 2 - obj.cx * objZoom * (math.cos(math.pi * objR / 180))  + obj.cy * objZoom * (math.sin(math.pi * objR / 180)) 
+local objRight  =  objW / 2 - obj.cx * objZoom * (math.cos(math.pi * objR / 180))  + obj.cy * objZoom * (math.sin(math.pi * objR / 180)) 
+local objTop    = -objH / 2 - obj.cy * objZoom * (math.cos(math.pi * objR / 180))  - obj.cx * objZoom * (math.sin(math.pi * objR / 180)) 
+local objBottom =  objH / 2 - obj.cy * objZoom * (math.cos(math.pi * objR / 180))  - obj.cx * objZoom * (math.sin(math.pi * objR / 180)) 
+
+local objX = obj.x + obj.ox
+local objY = obj.y + obj.oy
+
+local zoom = 1
+if zoomUp == 1 then
+	zoom = math.huge
+end
+if horizontal == 1 then
+	local hZoom = zoom
+	if objRight ~= 0 then
+		hZoom = math.min(math.abs(screenRight - objX) / math.abs(objRight), hZoom)
+	end
+	if objLeft ~= 0 then
+		hZoom = math.min(math.abs(screenLeft - objX) / math.abs(objLeft), hZoom)
+	end
+	if zoomDown == 0 then
+		hZoom = math.max(hZoom,1)
+	end
+	zoom = math.min(hZoom,zoom)
+end
+if vertical == 1 then
+	local vZoom = zoom
+	if objTop ~= 0 then
+		vZoom = math.min(math.abs(screenTop - objY) / math.abs(objTop), vZoom)
+	end
+	if objBottom ~= 0 then
+		vZoom = math.min(math.abs(screenBottom - objY) / math.abs(objBottom), vZoom)
+	end
+	if zoomDown == 0 then
+		vZoom = math.max(vZoom,1)
+	end
+	zoom = math.min(vZoom,zoom)
+end
+if objX < screenLeft or screenRight < objX then zoom = 0 end
+if objY < screenTop or screenBottom < objY then zoom = 0 end
+
+obj.zoom = obj.zoom * math.max(0,zoom)
+
+@âèéÊÇË
+--track0:ÉTÉCÉY,0,500,0
+--track1:Ç⁄Ç©Çµ,0,1000,0
+--track2:ìßñæìx,0,100,0
+--dialog:âèêF/col,local color=0xffffff;âèÇÃÇ›/chk,local isOutlineOnly=0;
+
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+local size = obj.track0
+local blur = obj.track1
+local transparency = obj.track2
+local zoom = obj.getvalue("zoom")/100
+
+local ymm4native = require("ymm4native")
+local tmpFront, front_w, front_h = obj.getpixeldata()
+local front = obj.getpixeldata("work")
+ymm4native.copy(front, tmpFront, front_w, front_h)
+
+obj.effect("âèéÊÇË","ÉTÉCÉY",size,"Ç⁄Ç©Çµ",0,"color",color)
+obj.effect("íPêFâª","ã≠Ç≥",100,"color",color,"ãPìxÇï€éùÇ∑ÇÈ",0)
+obj.effect("Ç⁄Ç©Çµ","îÕàÕ",blur)
+local back, back_w, back_h = obj.getpixeldata()
+if transparency ~= 0 then
+	ymm4native.set_alpha(back, back_w, back_h, (100 - transparency)/100)
+end
+if isOutlineOnly == 1 then
+	ymm4native.blend(back, back_w, back_h, front, front_w, front_h, 13)
+else
+	ymm4native.blend(back, back_w, back_h, front, front_w, front_h, 0)
+end
+obj.putpixeldata(back)
+
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx
+obj.cy=cy
+obj.cz=cz
+
+@ÉtÉFÅ[Éh
+--track0:å¯â éûä‘,0,99999,1
+--track1:ïsìßñæìx,0,100,0
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+obj.alpha = obj.alpha * toutai.GetValue(obj.track1/100,1,type,mode,toujou,taijou)
+
+@Ç⁄Ç©ÇµÇâèúÇµÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:Ç⁄Ç©Çµìx,0,250,3
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+obj.effect("Ç⁄Ç©Çµ","îÕàÕ",toutai.GetValue(obj.track1,0,type,mode,toujou,taijou))
+
+@ÉÇÉUÉCÉNÇâèúÇµÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:ÉTÉCÉY,0,5000,10
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+obj.effect("ÉÇÉUÉCÉN","ÉTÉCÉY",toutai.GetValue(obj.track1,1,type,mode,toujou,taijou))
+
+@à⁄ìÆÇµÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:X,-99999,99999,0
+--track2:Y,-99999,99999,0
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+obj.ox = obj.ox + toutai.GetValue(obj.track1,0,type,mode,toujou,taijou)
+obj.oy = obj.oy + toutai.GetValue(obj.track2,0,type,mode,toujou,taijou)
+
+@âÒì]ÇµÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:Xé≤,-3600,3600,0
+--track2:Yé≤,-3600,3600,0
+--track3:Zé≤,-3600,3600,0
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+obj.rx = obj.rx + toutai.GetValue(obj.track1,0,type,mode,toujou,taijou)
+obj.ry = obj.ry + toutai.GetValue(obj.track2,0,type,mode,toujou,taijou)
+obj.rz = obj.rz + toutai.GetValue(obj.track3,0,type,mode,toujou,taijou)
+
+@ägëÂÇµÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:ägëÂó¶,0,5000,0
+--track2:X,0,5000,0
+--track3:Y,0,5000,0
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";local ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+local zoom =  toutai.GetValue(obj.track1, 100,type,mode,toujou,taijou)
+local xzoom = toutai.GetValue(obj.track2, 100,type,mode,toujou,taijou)
+local yzoom = toutai.GetValue(obj.track3, 100,type,mode,toujou,taijou)
+obj.effect("ÉäÉTÉCÉY", "ägëÂó¶", zoom, "X", xzoom, "Y", yzoom)
+
+@ãNÇ´è„Ç™ÇËÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:ãNì_,0,5,0,1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+local angle = toutai.GetValue(90,0,type,mode,toujou,taijou)
+local zoom = obj.getvalue("zoom")/100
+local width  = obj.w / zoom
+local height = obj.h / zoom
+
+if obj.track1 == 0 then
+	obj.rx = obj.rx + angle
+	obj.ox = obj.ox - obj.cx
+	obj.oy = obj.oy - obj.cy - obj.h / 2
+	obj.cx = 0
+	obj.cy = -height/2
+elseif obj.track1 == 1 then
+	obj.rx = obj.rx - angle
+	obj.ox = obj.ox - obj.cx
+	obj.oy = obj.oy - obj.cy + obj.h / 2
+	obj.cx = 0
+	obj.cy = height/2
+elseif obj.track1 == 2 then
+	obj.ry = obj.ry - angle
+	obj.ox = obj.ox - obj.cx - obj.w / 2
+	obj.oy = obj.oy - obj.cy
+	obj.cx = -width/2
+	obj.cy = 0
+elseif obj.track1 == 3 then
+	obj.ry = obj.ry + angle
+	obj.ox = obj.ox - obj.cx + obj.w / 2
+	obj.oy = obj.oy - obj.cy
+	obj.cx = width/2
+	obj.cy = 0
+elseif obj.track1 == 4 then
+	obj.rx = obj.rx + angle
+	obj.ox = obj.ox - obj.cx
+	obj.oy = obj.oy - obj.cy
+	obj.cx = 0
+	obj.cy = 0
+else
+	obj.ry = obj.ry + angle
+	obj.ox = obj.ox - obj.cx
+	obj.oy = obj.oy - obj.cy
+	obj.cx = 0
+	obj.cy = 0
+end
+
+@óÃàÊäOÇ©ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:ï˚å¸,0,3,0,1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+
+local zoom = obj.getvalue("zoom")/100
+local width  = obj.w / zoom
+local height = obj.h / zoom
+
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+
+local fromX = 0
+local fromY = 0
+if(obj.track1 == 0) then
+	fromY = -height
+elseif(obj.track1 == 1) then
+	fromY = height
+elseif(obj.track1 == 2) then
+	fromX = -width
+elseif(obj.track1 == 3) then
+	fromX = width
+end
+
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+local x = toutai.GetValue(fromX,0,type,mode,toujou,taijou)
+local y = toutai.GetValue(fromY,0,type,mode,toujou,taijou)
+
+obj.setoption("drawtarget", "tempbuffer", width, height)
+obj.draw(x,y)
+
+obj.load("tempbuffer")
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx
+obj.cy=cy
+obj.cz=cz
+
+@âÊñ äOÇ©ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:ï˚å¸,0,3,0,1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+
+local zoom = obj.getvalue("zoom")/100
+local width  = obj.screen_w / zoom
+local height = obj.screen_h / zoom
+
+local fromX = 0
+local fromY = 0
+if(obj.track1 == 0) then
+	fromY = -height
+elseif(obj.track1 == 1) then
+	fromY = height
+elseif(obj.track1 == 2) then
+	fromX = -width
+elseif(obj.track1 == 3) then
+	fromX = width
+end
+
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+local x = toutai.GetValue(fromX,0,type,mode,toujou,taijou)
+local y = toutai.GetValue(fromY,0,type,mode,toujou,taijou)
+
+obj.ox = obj.ox + x
+obj.oy = obj.oy + y
+
+@ã´äEÇ⁄Ç©ÇµâèúÇµÇ»Ç™ÇÁìoèÍ
+--track0:å¯â éûä‘,0,99999,1
+--track1:Ç⁄Ç©Çµ,0,250,3
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";ìoèÍéû/chk,local toujou=1;ëﬁèÍéû/chk,local taijou=1;
+local toutai = require("YMM4/ìoèÍëﬁèÍ")
+obj.effect("ã´äEÇ⁄Ç©Çµ","îÕàÕ",toutai.GetValue(obj.track1,0,type,mode,toujou,taijou), "ècâ°î‰", 0, "ìßñæìxÇÃã´äEÇÇ⁄Ç©Ç∑", 1)
+
+@èÍñ êÿÇËë÷Ç¶ÅiëOèàóùÅj
+--check0:ècâ°î‰Çï€éù,1
+--file:
+local zoom = obj.getvalue("zoom")/100
+local objw = obj.w/zoom
+local objh = obj.h/zoom
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+
+obj.setoption("drawtarget", "tempbuffer", objw, objh)
+obj.draw()
+
+obj.load("image", file)
+
+transX = 0
+transY = 0
+local patternZoom = math.max(objw/obj.w,objh/obj.h)
+local pw = obj.w * patternZoom
+local ph = obj.h * patternZoom
+if(obj.check0) then
+	if (objw/pw < objh/ph) then
+		transX = math.abs(pw-objw)/2
+	else
+		transY = math.abs(ph-objh)/2
+	end
+end
+
+obj.load("tempbuffer")
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx
+obj.cy=cy
+obj.cz=cz
+obj.effect("óÃàÊägí£", "è„",transY, "â∫",transY, "ç∂",transX, "âE",transX)
+
+@èÍñ êÿÇËë÷Ç¶Åiå„èàóùÅj
+obj.effect("ÉNÉäÉbÉsÉìÉO", "è„",transY, "â∫",transY, "ç∂",transX, "âE",transX)
+
+@îΩïúà⁄ìÆ
+--track0:ä‘äu,0,1000,1,0.1
+--track1:X,-99999,99999,0,1
+--track2:Y,-99999,99999,0,1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";íÜâõäÒÇπ/chk,local centering=1;
+local hanpuku= require("YMM4/îΩïú")
+local x = hanpuku.GetValue(0,obj.track1,type,mode,centering)
+local y = hanpuku.GetValue(0,obj.track2,type,mode,centering)
+obj.ox = obj.ox + x
+obj.oy = obj.oy + y
+
+@îΩïúìßâﬂ
+--track0:ä‘äu,0,1000,1,0.1
+--track1:ìßñæìx,0,100,100,1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";
+local centering = 0
+local hanpuku= require("YMM4/îΩïú")
+local alpha = hanpuku.GetValue(100,obj.track1,type,mode,centering)
+obj.alpha = obj.alpha * alpha / 100
+
+@îΩïúâÒì]
+--track0:ä‘äu,0,1000,1,0.1
+--track1:X,-3600,3600,0,0.1
+--track2:Y,-3600,3600,0,0.1
+--track3:Z,-3600,3600,0,0.1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";íÜâõäÒÇπ/chk,local centering=1;
+local hanpuku= require("YMM4/îΩïú")
+local x = hanpuku.GetValue(0,obj.track1,type,mode,centering)
+local y = hanpuku.GetValue(0,obj.track2,type,mode,centering)
+local z = hanpuku.GetValue(0,obj.track3,type,mode,centering)
+obj.rx = obj.rx + x
+obj.ry = obj.ry + y
+obj.rz = obj.rz + z
+
+@îΩïúägëÂèkè¨
+--track0:ä‘äu,0,1000,1,0.1
+--track1:ägëÂó¶,0,5000,100,0.1
+--track2:X,0,5000,100,0.1
+--track3:Y,0,5000,100,0.1
+--dialog:éÌóﬁ,local type="Sine";â¡å∏ë¨,local mode="InOut";íÜâõäÒÇπ/chk,local centering=1;
+local hanpuku= require("YMM4/îΩïú")
+local zoom  = hanpuku.GetValue(100,obj.track1,type,mode,centering)
+local zoomx = hanpuku.GetValue(100,obj.track2,type,mode,centering)
+local zoomy = hanpuku.GetValue(100,obj.track3,type,mode,centering)
+obj.effect("ägëÂó¶", "ägëÂó¶", zoom, "X", zoomx, "Y", zoomy)
+
+@ÉâÉìÉ_ÉÄà⁄ìÆ
+--track0:ä‘äu,0,1000,0.13,0.01
+--track1:X,0,99999,100,1
+--track2:Y,0,99999,100,1
+local random = require("YMM4/ÉâÉìÉ_ÉÄ")
+local x = obj.track1
+local y = obj.track2
+local rx = random.GetRandomValue(0)
+local ry = random.GetRandomValue(1)
+obj.ox = obj.ox + x * rx - x / 2
+obj.oy = obj.oy + y * ry - y / 2
+
+@ÉâÉìÉ_ÉÄìßâﬂ
+--track0:ä‘äu,0,1000,0.13,0.01
+--track1:ïsìßñæìx,0,100,0,1
+local random = require("YMM4/ÉâÉìÉ_ÉÄ")
+local opacity = obj.track1
+local ro = random.GetRandomValue(0)
+obj.alpha = obj.alpha * (100 + (opacity - 100) * ro) / 100
+
+@ÉâÉìÉ_ÉÄâÒì]
+--track0:ä‘äu,0,1000,0.13,0.01
+--track1:X,0,3600,0,0.1
+--track2:Y,0,3600,0,0.1
+--track3:Z,0,3600,0,0.1
+local random = require("YMM4/ÉâÉìÉ_ÉÄ")
+local x = obj.track1
+local y = obj.track2
+local z = obj.track3
+local rx = random.GetRandomValue(0)
+local ry = random.GetRandomValue(1)
+local rz = random.GetRandomValue(2)
+obj.rx = obj.rx + x * rx - x / 2
+obj.ry = obj.ry + y * ry - y / 2
+obj.rz = obj.rz + z * rz - z / 2
+
+@ÉâÉìÉ_ÉÄägëÂèkè¨
+--track0:ä‘äu,0,1000,0.13,0.01
+--track1:ëSëÃ,0,5000,0,0.1
+--track2:X,0,5000,100,0.1
+--track3:Y,0,5000,100,0.1
+local random = require("YMM4/ÉâÉìÉ_ÉÄ")
+local za = obj.track1
+local zx = obj.track2
+local zy = obj.track3
+local rza = random.GetRandomValue(0)
+local rzx = random.GetRandomValue(1)
+local rzy = random.GetRandomValue(2)
+obj.effect("ägëÂó¶", "ägëÂó¶", 100 + (za - 100) * rza, "X", 100 + (zx - 100) * rzx, "Y", 100 + (zy - 100) * rzy)
+
+@êÓå`
+--track0:íÜêSäp,0,360,270
+--track1:íÜêSäÓèÄ,-100,100,0
+--track2:ÉTÉCÉY,0,2000,100
+--track3:ÉâÉCÉìïù,0,2000,2000
+--color:0xffffff
+local r = 180-obj.track0/2
+local rotate = obj.track1
+local l = math.floor(obj.track2/2); -- É~ÉâÅ[ÇÃí≤êÆÇ™êÆêîÇ»ÇÃÇ≈Åc
+local thickness = obj.track3
+
+local figures = require("YMM4/figures")
+figures.LoadFan(obj, l, r, rotate, thickness, color)
+
+@ècâ°î‰
+--track0:ècâ°î‰,-100,100,0
+local aspect = obj.track0
+local xrate = 100 - math.max(0, aspect)
+local yrate = 100 + math.min(0, aspect)
+obj.effect("ägëÂó¶","X",xrate)
+obj.effect("ägëÂó¶","Y",yrate)
+
+@û∂å`
+--track0:Ç÷Ç±Ç›,0,100,30
+--track1:ÉTÉCÉY,0,2000,100
+--track2:ÉâÉCÉìïù,0,2000,2000
+--color:0xffffff
+local rate = (100 - obj.track0) / 100
+local size = obj.track1
+local line = obj.track2
+
+local figures = require("YMM4/figures")
+figures.LoadWedge(obj, size, rate, line, color)
+
+@äpä€éläpå`
+--track0:äpä€,0,4000,12,1
+--track1:ÉTÉCÉY,0,2000,100,1
+--track2:ÉâÉCÉìïù,0,2000,2000,1
+--track3:ècâ°î‰,-100,100,0
+--color:0xffffff
+local round = obj.track0
+local size = obj.track1
+local line = obj.track2
+local aspect = obj.track3
+local width  = math.floor(size * (1 - math.max(0, aspect / 100)))
+local height = math.floor(size * (1 + math.min(0, aspect / 100)))
+line = math.min(line,math.min(width,height))
+
+local figures = require("YMM4/figures")
+figures.LoadRoundedRect(obj, width, height, line, color, round)
+
+@ñÓàÛ
+--track0:ÉTÉCÉY,0,2000,100,1
+--track1:í∑Ç≥,0,8000,100,1
+--track2:ëæÇ≥,0,100,50,1
+--track3:Ç÷Ç±Ç›,0,30,30,1
+--dialog:êF/col,local color=0xffffff;ê¸ÇÃí∑Ç≥,local type=0;
+local rate   = (100 - obj.track3) / 100
+local size   = obj.track0
+local length = obj.track1 / 100 * size * 2
+local stroke = obj.track2 / 100 * size / 2
+
+local figures = require("YMM4/figures")
+figures.LoadArrow(obj, size, rate, length, stroke, type, color)
+
+@îwåiìhÇËÇ¬Ç‘Çµ
+--track0:ïsìßñæìx,0,100,100,1
+--track1:äpä€îºåa,0,1000,0,1
+--color:0xffffff
+
+local zoom = obj.getvalue("zoom")/100
+local width = obj.w / zoom
+local height = obj.h / zoom
+local left = -width/2
+local top  = -height/2
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+local round = obj.track1
+local cornerWidth  = math.min(round, math.floor(width/2.0))
+local cornerHeight = math.min(round, math.floor(height/2.0))
+local radius = math.max(cornerWidth, cornerHeight)
+
+
+obj.setoption("drawtarget", "tempbuffer", width, height)
+obj.draw()
+obj.copybuffer("cache:01", "tmp")
+
+obj.setoption("drawtarget", "tempbuffer", width, height)
+obj.load("figure","éläpå`",color,1)
+obj.drawpoly(left+cornerWidth,top,0, left+width-cornerWidth,top,0, left+width-cornerWidth,top+height,0, left+cornerWidth,top+height,0,       0,0, 1,0, 1,1, 0,1, obj.track0/100)
+obj.drawpoly(left,top+cornerHeight,0, left+cornerWidth,top+cornerHeight,0, left+cornerWidth,top+height-cornerHeight,0, left,top+height-cornerHeight,0,       0,0, 1,0, 1,1, 0,1, obj.track0/100)
+obj.drawpoly(left+width-cornerWidth,top+cornerHeight,0, left+width,top+cornerHeight,0, left+width,top+height-cornerHeight,0, left+width-cornerWidth,top+height-cornerHeight,0,       0,0, 1,0, 1,1, 0,1, obj.track0/100)
+
+obj.load("figure", "â~", color, radius*2, 4000)
+obj.drawpoly(left,top,0, left+cornerWidth,top,0, left+cornerWidth,top+cornerHeight,0, left,top+cornerHeight,0,       0,0, radius,0, radius,radius, 0,radius, obj.track0/100)
+obj.drawpoly(left+width-cornerWidth,top,0, left+width,top,0, left+width,top+cornerHeight,0, left+width-cornerWidth,top+cornerHeight,0,       radius,0, radius*2,0, radius*2,radius, radius,radius, obj.track0/100)
+obj.drawpoly(left+width-cornerWidth,top+height-cornerHeight,0, left+width,top+height-cornerHeight,0, left+width,top+height,0, left+width-cornerWidth,top+height,0,       radius,radius, radius*2,radius, radius*2,radius*2, radius,radius*2, obj.track0/100)
+obj.drawpoly(left,top+height-cornerHeight,0, left+cornerWidth,top+height-cornerHeight,0, left+cornerWidth,top+height,0, left,top+height,0,       0,radius, radius,radius, radius,radius*2, 0,radius*2, obj.track0/100)
+
+obj.copybuffer("cache:02", "tmp")
+
+obj.copybuffer("tmp", "cache:01")
+obj.load("tempbuffer")
+obj.copybuffer("tmp", "cache:02")
+obj.draw()
+
+obj.load("tempbuffer")
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx
+obj.cy=cy
+obj.cz=cz
+
+@ïîï™ÉGÉtÉFÉNÉg
+--track0:ÉTÉCÉY,0,1000,100,1
+--track1:ècâ°î‰,-100,100,0,0.1
+--track2:Ç⁄Ç©Çµ,0,30,30,1
+--dialog:É}ÉXÉNÇÃéÌóﬁ,local shape=0;É}ÉXÉNÇÃîΩì],local invert=0;
+local x = obj.x + obj.ox
+local y = obj.y + obj.oy
+local z = obj.z + obj.oz
+local rotate = obj.rz
+
+local size   = obj.track0
+local aspect = obj.track1
+local blur   = obj.track2
+
+obj.ox = -obj.x
+obj.oy = -obj.y
+obj.oz = -obj.z
+
+obj.cx = 0
+obj.cy = 0
+obj.cz = 0
+
+obj.rx = 0
+obj.ry = 0
+obj.rz = 0
+
+obj.zoom = 1
+obj.aspect = 0
+
+obj.effect("É}ÉXÉN", "X", x, "Y", y, "âÒì]", rotate, "ÉTÉCÉY", size, "ècâ°î‰", aspect, "Ç⁄Ç©Çµ", blur, "type", shape, "É}ÉXÉNÇÃîΩì]", invert)
+
+@ògê¸
+--track0:éÌóﬁ,0,4,0,1
+--track1:ê¸ïù,0,100,10,1
+--track2:ïsìßñæìx,0,100,100,0.1
+--color:0xffffff
+
+local mode = obj.track0
+local zoom = obj.getvalue("zoom")/100
+local width = obj.w / zoom
+local height = obj.h / zoom
+local thickness = obj.track1
+local opacity = obj.track2/100
+
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+
+local offsetX = 0
+local offsetY = 0
+if(mode == 0) then
+	width  = width  + thickness * 2
+	height = height + thickness * 2
+elseif(mode == 1) then
+	height = height + thickness
+	offsetY = thickness/2
+elseif(mode == 2) then
+	height = height + thickness
+	offsetY = -thickness/2
+elseif(mode == 3) then
+	width  = width  + thickness
+	offsetX = thickness/2
+else
+	width  = width  + thickness
+	offsetX = -thickness/2
+end
+obj.setoption("drawtarget", "tempbuffer", width, height)
+obj.draw(offsetX,offsetY)
+
+obj.load("figure","éläpå`",color,1)
+if(mode == 0 or mode == 1) then
+	obj.drawpoly(-width/2,-height/2,0, width/2,-height/2,0, width/2,-height/2+thickness,0, -width/2,-height/2+thickness,0, 0,0, 1,0, 1,1, 0,1, opacity)
+end
+if(mode == 0 or mode == 2) then
+	obj.drawpoly(-width/2,height/2-thickness,0, width/2,height/2-thickness,0, width/2,height/2,0, -width/2,height/2,0, 0,0, 1,0, 1,1, 0,1, opacity)
+end
+if(mode == 0) then
+	obj.drawpoly(-width/2,-height/2+thickness,0, -width/2+thickness,-height/2+thickness,0, -width/2+thickness,height/2-thickness,0, -width/2,height/2-thickness,0, 0,0, 1,0, 1,1, 0,1, opacity)
+	obj.drawpoly(width/2-thickness,-height/2+thickness,0, width/2,-height/2+thickness,0, width/2,height/2-thickness,0, width/2-thickness,height/2-thickness,0, 0,0, 1,0, 1,1, 0,1, opacity)
+elseif(mode == 3) then
+	obj.drawpoly(-width/2,-height/2,0, -width/2+thickness,-height/2,0, -width/2+thickness,height/2,0, -width/2,height/2,0, 0,0, 1,0, 1,1, 0,1, opacity)
+elseif(mode == 4) then
+	obj.drawpoly(width/2-thickness,-height/2,0, width/2,-height/2,0, width/2,height/2,0, width/2-thickness,height/2,0, 0,0, 1,0, 1,1, 0,1, opacity)
+end
+
+obj.load("tempbuffer")
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx+offsetX
+obj.cy=cy+offsetY
+obj.cz=cz
+
+@ï°êªÇµÇƒîΩì]
+--track0:ãóó£,-99999,99999,0,1
+--dialog:à íu,local pos=0;è„â∫îΩì]/chk,local revtb=0;ç∂âEîΩì]/chk,local revlr=0;íÜâõäÒÇπ/chk,local centering=0;
+
+local distance = obj.track0
+
+local zoom = obj.getvalue("zoom")/100
+local width = obj.w / zoom
+local height = obj.h / zoom
+
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+
+local x = 0
+local y = 0
+if(pos == 0) then
+	x = 0
+	y = 1 / 2
+	obj.setoption("drawtarget", "tempbuffer", width, height * 2 + distance)
+elseif(pos == 1) then
+	x = 0
+	y = -1 / 2
+	obj.setoption("drawtarget", "tempbuffer", width, height * 2 + distance)
+elseif(pos == 2) then
+	x = 1 / 2
+	y = 0
+	obj.setoption("drawtarget", "tempbuffer", width * 2 + distance, height)
+else
+	x = -1 / 2
+	y = 0
+	obj.setoption("drawtarget", "tempbuffer", width * 2 + distance, height)
+end
+
+obj.effect("ÉNÉäÉbÉsÉìÉO", "è„", math.floor(-math.min(distance, 0) * y), "â∫", math.floor(math.min(distance, 0) * y), "ç∂", math.floor(-math.min(distance, 0) * x), "âE", math.floor(math.min(distance, 0) * x))
+obj.effect("óÃàÊägí£"    , "è„", math.floor(-math.min(distance, 0) * y), "â∫", math.floor(math.min(distance, 0) * y), "ç∂", math.floor(-math.min(distance, 0) * x), "âE", math.floor(math.min(distance, 0) * x))
+obj.draw(width *  x + distance *  x, height *  y + distance *  y)
+obj.effect("ÉNÉäÉbÉsÉìÉO", "è„", math.floor(-math.min(distance, 0) * y), "â∫", math.floor(math.min(distance, 0) * y), "ç∂", math.floor(-math.min(distance, 0) * x), "âE", math.floor(math.min(distance, 0) * x))
+
+obj.effect("îΩì]", "è„â∫îΩì]", revtb, "ç∂âEîΩì]", revlr)
+obj.effect("óÃàÊägí£"    , "â∫", math.floor(-math.min(distance, 0) * y), "è„", math.floor(math.min(distance, 0) * y), "âE", math.floor(-math.min(distance, 0) * x), "ç∂", math.floor(math.min(distance, 0) * x))
+obj.draw(width * -x + distance * -x, height * -y + distance * -y)
+
+if(centering == 0) then
+	cx = cx + width  * x + distance *  x
+	cy = cy + height * y + distance *  y
+end
+
+obj.load("tempbuffer")
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx
+obj.cy=cy
+obj.cz=cz
+
+@îgñ‰Åiê›íËÅj
+--track0:X,-4000,4000,0,1
+--track1:Y,-4000,4000,0,1
+--track2:îgí∑,0,800,0,1
+--track3:êUïù,-200,200,0,1
+rippleX = obj.track0
+rippleY = obj.track1
+rippleLength = obj.track2
+rippleAmplitude = obj.track3
+
+@îgñ‰Åiï`âÊÅj
+--track0:é¸ä˙,-1000,1000,0,01
+local ripplePeriod = obj.track0
+
+local v =  rippleLength / ripplePeriod
+if(ripplePeriod == 0) then
+	v = 0
+end
+obj.effect("îgñ‰", "íÜêSX", rippleX, "íÜêSY", rippleY, "ïù", rippleLength / 2, "çÇÇ≥", rippleAmplitude * 2, "ë¨ìx", v)
+
+@îwåiâÊëú
+--track0:X,-4000,4000,0,0.1
+--track1:Y,-4000,4000,0,0.1
+--track2:ìßñæìx,0,100,0,0.1
+--track3:ägëÂó¶,0,5000,100,0.1
+--dialog:ÉtÉ@ÉCÉã,local file="";çƒê∂ë¨ìx,local playbackRate=100;
+local textureX = obj.track0
+local textureY = obj.track1
+local textureAlpha = 1 - obj.track2/100
+local textureZoom = obj.track3/100
+local texturePlaybackRate = playbackRate/100
+
+local zoom = obj.getvalue("zoom")/100
+local width = obj.w / zoom
+local height = obj.h / zoom
+local left = -width/2
+local top  = -height/2
+local ox = obj.ox
+local oy = obj.oy
+local oz = obj.oz
+local rx = obj.rx
+local ry = obj.ry
+local rz = obj.rz
+local cx = obj.cx
+local cy = obj.cy
+local cz = obj.cz
+
+obj.setoption("drawtarget", "tempbuffer", width, height)
+obj.draw()
+obj.copybuffer("cache:01", "tmp")
+
+obj.setoption("drawtarget", "tempbuffer", width, height)
+local isVideo = string.find(file,".mp4",1,true) == #file - 3  or string.find(file,".avi",1,true) == #file - 3 or string.find(file,".gif",1,true) == #file - 3 or string.find(file,".webp",1,true) == #file - 3
+if isVideo then
+	local totalTime = obj.load("movie",file)
+	obj.load("movie", file, (obj.time * texturePlaybackRate) % totalTime)
+else
+	obj.load(file)
+end
+local textureWidth = obj.w * textureZoom
+local textureHeight = obj.h * textureZoom
+textureX = textureX % textureWidth
+textureY = textureY % textureHeight
+local loopX = (width - textureX) / textureWidth + 2
+local loopY = (height - textureY) / textureHeight + 2
+obj.effect("âÊëúÉãÅ[Év", "â°âÒêî",loopX,"ècâÒêî",loopY,"ë¨ìxX",0,"ë¨ìxY",0)
+obj.draw(left + obj.w * textureZoom / 2 + textureX - textureWidth, top + obj.h * textureZoom / 2 + textureY - textureHeight, 0, textureZoom, textureAlpha)
+obj.copybuffer("cache:02", "tmp")
+
+obj.copybuffer("tmp", "cache:01")
+obj.load("tempbuffer")
+obj.copybuffer("tmp", "cache:02")
+obj.draw()
+
+obj.load("tempbuffer")
+obj.ox=ox
+obj.oy=oy
+obj.oz=oz
+obj.rx=rx
+obj.ry=ry
+obj.rz=rz
+obj.cx=cx
+obj.cy=cy
+obj.cz=cz
+
+@íµÇÀÇÈÅiê›íË1Åj
+--track0:çÇÇ≥,0,99999,100,0.1
+--track1:êLÇ—,0,99999,25,0.1
+--track2:é¸ä˙,0,99999,0.5,0.01
+JumpHeight = obj.track0
+JumpStretch= obj.track1 / 100
+JumpPeriod = obj.track2
+
+@íµÇÀÇÈÅiê›íË2Åj
+--track0:òcÇ›,0,100,25,0.1
+--track1:ä‘äu,0,99999,0.3,0.01
+--track2:X,-99999,99999,0,0.1
+--track3:Y,-99999,99999,0,0.1
+JumpDistortion = obj.track0 / 100
+JumpInterval   = obj.track1
+ToX = obj.track2
+ToY = obj.track3
+
+@íµÇÀÇÈÅiï`âÊÅj
+local zoom = obj.getvalue("zoom") / 100
+local height = obj.h / zoom
+
+JumpStretch = JumpStretch * height
+JumpDistortion = JumpDistortion * height / 2
+
+local cycleMax = 0
+local cycleCount = 0
+if (JumpPeriod + JumpInterval) ~= 0 then
+	cycleMax = obj.totaltime / (JumpPeriod + JumpInterval)
+	cycleCount = math.floor(obj.time / (JumpPeriod + JumpInterval))
+end
+local cycleTime = obj.time - (JumpPeriod + JumpInterval) * cycleCount
+local periodRate = 0
+if JumpPeriod ~= 0 then
+	periodRate = math.min(1, cycleTime / JumpPeriod)
+end
+local intervalTime = cycleTime - JumpPeriod
+local intervalRate = 0
+if JumpInterval ~= 0 then
+	intervalRate = intervalTime / JumpInterval
+end
+
+local dy = 0
+if 0 < JumpPeriod and cycleTime < JumpPeriod then
+	dy = JumpHeight * math.sin(periodRate * math.pi) / zoom
+else
+	dy = -JumpDistortion * math.sin(intervalRate * math.pi)
+end
+
+local yScale = 1
+local xScale = 1
+if 0 < height then
+	yScale = (height + math.min(dy * 2, JumpStretch)) / height
+end
+if yScale ~= 0 then
+	xScale = 1 / yScale
+end
+
+local moveDeltaX = 0
+local moveDeltaY = 0
+if cycleMax ~= 0 then
+	moveDeltaX = ToX / cycleMax
+	moveDeltaY = ToY / cycleMax
+end
+local moveX = moveDeltaX * (cycleCount + periodRate)
+local moveY = moveDeltaY * (cycleCount + periodRate)
+
+obj.effect("ägëÂó¶", "X", xScale * 100, "Y", yScale * 100)
+obj.effect("ç¿ïW", "X", moveX, "Y", moveY - dy * zoom)
+
+@íµÇÀÇ»Ç™ÇÁìoèÍëﬁèÍ
+--track0:å¯â éûä‘,0,99999,3,0.01
+--dialog:ìoèÍ/chk,local inEffect=0;ìoèÍéûîΩì]/chk,local revin=0;ëﬁèÍ/chk,local outEffect=0;ëﬁèÍéûîΩì]/chk,local revout=0;
+
+local time = obj.time
+local totaltime = obj.totaltime
+local effectTime = obj.track0
+
+local inRate = 1
+local outRate = 1
+if inEffect == 1 then
+	inRate = math.min(1, math.max(0, time / effectTime))
+end
+if outEffect == 1 then
+	outRate = math.min(1, math.max(0, (totaltime - time) / effectTime))
+end
+local rate = 1 - math.min(inRate, outRate)
+
+local reverse = false
+if time < effectTime and inRate < outRate then
+	reverse = revin
+elseif totaltime - effectTime < time and outRate < inRate then
+	reverse = revout
+end
+
+time = effectTime * rate
+totaltime = effectTime
+
+-- Ç±Ç±Ç©ÇÁã§í 
+
+local zoom = obj.getvalue("zoom") / 100
+local height = obj.h / zoom
+
+JumpStretch = JumpStretch * height
+JumpDistortion = JumpDistortion * height / 2
+
+local cycleMax = 0
+local cycleCount = 0
+if (JumpPeriod + JumpInterval) ~= 0 then
+	cycleMax = totaltime / (JumpPeriod + JumpInterval)
+	cycleCount = math.floor(time / (JumpPeriod + JumpInterval))
+end
+local cycleTime = time - (JumpPeriod + JumpInterval) * cycleCount
+local periodTime = math.min(1, math.max(0, cycleTime - JumpInterval))
+-- period Ç∆ intervalÇÃèáî‘Çì¸ÇÍë÷Ç¶
+local periodRate = 0
+if JumpPeriod ~= 0 then
+	periodRate = periodTime / JumpPeriod
+end
+local intervalTime = cycleTime
+local intervalRate = 0
+if JumpInterval ~= 0 then
+	intervalRate = intervalTime / JumpInterval
+end
+
+local dy = 0
+if cycleTime < JumpInterval then
+	dy = -JumpDistortion * math.sin(intervalRate * math.pi)
+else
+	dy = JumpHeight * math.sin(periodRate * math.pi) / zoom
+end
+
+local yScale = 1
+local xScale = 1
+if 0 < height then
+	yScale = (height + math.min(dy * 2, JumpStretch)) / height
+end
+if yScale ~= 0 then
+	xScale = 1 / yScale
+end
+
+local moveDeltaX = 0
+local moveDeltaY = 0
+if cycleMax ~= 0 then
+	moveDeltaX = ToX / cycleMax
+	moveDeltaY = ToY / cycleMax
+end
+local moveX = moveDeltaX * (cycleCount + periodRate)
+local moveY = moveDeltaY * (cycleCount + periodRate)
+
+obj.effect("ägëÂó¶", "X", xScale * 100, "Y", yScale * 100)
+obj.effect("ç¿ïW", "X", moveX, "Y", moveY - dy * zoom)
+-- îΩì]èàóù
+obj.effect("îΩì]", "ç∂âEîΩì]", reverse)

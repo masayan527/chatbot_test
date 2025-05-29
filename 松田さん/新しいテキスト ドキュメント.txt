@@ -1,0 +1,19 @@
+・検索の複数条件
+
+Filter('異常処置報告（ik)', StartsWith(件名, TextInput1.Text),IsBlank(ComboBox1.Selected)||[Process2]=ComboBox1.Selected.Value)
+
+
+・ボタンを押す人を指定する
+https://qiita.com/ssc-ksakamaki/items/b70476e7102ba162f04d
+
+・新規入力
+・リスト構造
+
+
+
+Patch(AFC_Apps_safe_test,
+      Defaults(AFC_Apps_safe_test),
+      {タイトル:TextInput1.Text,
+      bujou:LookUp(AFC_Apps_dpt2, bujou = Dropdown1_1.SelectedText,CategoryID),
+      shozoku:LookUp(AFC_Apps_dpt, 所属 = Dropdown1.Selected,UnitID)
+      } )
