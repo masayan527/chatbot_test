@@ -107,7 +107,7 @@ def simple_chatbot(text):
         return "またお話ししましょう！"
     
     elif predicted_intent == "ask_capability":
-        return "天気予報をお伝えしたり、簡単な会話ができます。他にはどんなことが知りたいですか？"
+        return "ファインケム内のお困りごとならお任せください。なんでも聞いてくださいね！"
     
     elif predicted_intent == "get_time":
         # 日本時間のタイムゾーンオブジェクトを作成
