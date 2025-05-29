@@ -136,8 +136,8 @@ def simple_chatbot(text):
         return "ガンタンクでなければ直ぐに上司に報告じゃ"
 
     else: # どの意図にも当てはまらなかった場合
-        return "すみません、よくわかりません。別の質問をしてください。"
-
+        return f"すみません、よくわかりません。\n\n[管理人にご連絡ください。](mailto:yano.mch@om.asahi-kasei.co.jp)"
+    
 # --- StreamlitでのWebアプリ化 ---
 st.title("ファイケムのアシスたん")
 
